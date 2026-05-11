@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Damien's Quest: The Secret Choice</title>
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #e9e9e9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #game-container {
+            background-color: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid #0f3460;
+        }
+        h1 { color: #e94560; }
+        #description { font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; }
+        .btn-container { display: flex; flex-direction: column; gap: 10px; }
+        button {
+            background-color: #0f3460;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+        button:hover { background-color: #e94560; }
+        #inventory { margin-top: 20px; font-style: italic; color: #999; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>ခင်မျိုးထွေးရေ သေချာရွေးနော်</h1>
+    <div id="description">ဇာတ်လမ်းစတင်ရန် ခလုတ်ကို နှိပ်ပါ။</div>
+    <div class="btn-container" id="options">
+        <button onclick="startGame()">စွန့်စားခန်းစတင်မယ်</button>
+    </div>
+    <div id="inventory">အိတ်ထဲရှိပစ္စည်း: ဘာမှမရှိသေးပါ</div>
+</div>
+
+<script>
+    let inventory = [];
+    const descEl = document.getElementById('description');
+    const optEl = document.getElementById('options');
+    const invEl = document.getElementById('inventory');
+
+    function updateGame(text, choices) {
+        descEl.innerText = text;
+        optEl.innerHTML = '';
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.innerText = choice.text;
+            btn.onclick = choice.action;
+            optEl.appendChild(btn);
+        });
+        invEl.innerText = "အိတ်ထဲရှိပစ္စည်း: " + (inventory.length > 0 ? inventory.join(', ') : "ဘာမှမရှိသေးပါ");
+    }
+
+    function startGame() {
+        updateGame("မင်းသမီးလေးကို ကယ်တင်ဖို့ ခရီးစထွက်လာပါပြီ။ လမ်းအစမှာ မင်းအတွက် အဖော်တစ်ယောက် ရွေးချယ်ခွင့်ရှိပါတယ်။", [
+            { text: "ပါးနပ်တဲ့ မြေခွေးလေးကို ခေါ်မယ်", action: () => { inventory.push("မြေခွေး"); forestStage(); } },
+            { text: "တန်ခိုးရှိတဲ့ ဓားကို ယူမယ်", action: () => { inventory.push("ဓား"); forestStage(); } }
+        ]);
+    }
+
+    function forestStage() {
+        updateGame("မှော်တောအုပ်ကြီးထဲကို ရောက်လာပါပြီ။ ရှေ့မှာ လမ်းနှစ်ခွ တွေ့ရတယ်။", [
+            { text: "ခြုံနွယ်တွေကြားက လမ်းဟောင်း", action: () => caveStage("old_path") },
+            { text: "မြစ်ဘေးက လမ်းအသစ်", action: () => caveStage("river_path") }
+        ]);
+    }
+
+    function caveStage(path) {
+        let text = "တောအုပ်ထဲမှာ လှိုဏ်ဂူတစ်ခု တွေ့ပါတယ်။ ဂူထဲမှာ ပစ္စည်းတစ်ခု တွေ့တယ်။";
+        updateGame(text, [
+            { text: "မှော်ပုဆိုးကို ယူမယ်", action: () => { inventory.push("မှော်ပုဆိုး"); monsterStage(); } },
+            { text: "မှော်ဆေးရည်ကို ယူမယ်", action: () => { inventory.push("မှော်ဆေးရည်"); monsterStage(); } }
+        ]);
+    }
+
+    function monsterStage() {
+        updateGame("မိစ္ဆာဂိတ်စောင့်ကြီးက လမ်းပိတ်ထားပါတယ်။ သူက အရမ်းသန်မာတယ်။", [
+            { text: "တိုက်ခိုက်မယ်", action: () => checkBattle(true) },
+            { text: "ပုန်းလျှိုးပြီး ရှောင်ထွက်မယ်", action: () => checkBattle(false) }
+        ]);
+    }
+
+    function checkBattle(isFighting) {
+        if (isFighting && inventory.includes("ဓား")) {
+            castleStage("အောင်မြင်စွာ တိုက်ခိုက်နိုင်ခဲ့ပါတယ်။");
+        } else if (!isFighting && inventory.includes("မှော်ပုဆိုး")) {
+            castleStage("မမြင်ရအောင် ရှောင်ထွက်နိုင်ခဲ့ပါတယ်။");
+        } else {
+            gameOver("မင်းမှာ လုံလောက်တဲ့ အစွမ်းမရှိလို့ မိစ္ဆာလက်မှာ ရှုံးနိမ့်သွားပါပြီ။");
+        }
+    }
+
+    function castleStage(msg) {
+        updateGame(msg + " အခု မိစ္ဆာရုန်းတော်ကြီးထဲ ရောက်ပါပြီ။ မင်းသမီးလေးရှိတဲ့ အခန်းရှေ့မှာ နောက်ဆုံး တံခါးကြီး ရှိနေပါတယ်။", [
+            { text: "တံခါးကို ရိုက်ချိုးမယ်", action: () => finalCheck("break") },
+            { text: "သော့ကို ရှာဖွေမယ်", action: () => finalCheck("search") }
+        ]);
+    }
+
+    function finalCheck(action) {
+        // Secret Logic: မင်းသမီးကို ကယ်နိုင်ဖို့က အဖော် (မြေခွေး) ရှိမှ သော့ရှာတာ အောင်မြင်မယ်
+        // သို့မဟုတ် ဓားရှိမှ တံခါးချိုးတာ အောင်မြင်မယ်
+        if (action === "break" && inventory.includes("ဓား")) {
+            gameWin();
+        } else if (action === "search" && inventory.includes("မြေခွေး")) {
+            gameWin();
+        } else {
+            gameOver("ရွေးချယ်မှု မှားယွင်းသွားပါတယ်။ မင်းသမီးလေးကို မကယ်တင်နိုင်ခဲ့ပါဘူး။");
+        }
+    }
+
+    function gameWin() {
+        updateGame("ဂုဏ်ယူပါတယ်။ မင်းသမီးလေးကို ဘေးကင်းစွာ ကယ်တင်နိုင်ခဲ့ပါပြီ။ မင်းဟာ တကယ့်သူရဲကောင်းပါ။", [
+            { text: "ပြန်ဆော့မယ်", action: () => { inventory = []; startGame(); } }
+        ]);
+    }
+
+    function gameOver(reason) {
+        updateGame("Game Over! " + reason, [
+            { text: "ပြန်ကြိုးစားမယ်", action: () => { inventory = []; startGame(); } }
+        ]);
+    }
+</script>
+
+</body>
+</html>
+
